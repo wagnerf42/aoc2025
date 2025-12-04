@@ -3,7 +3,7 @@ use std::{
     io::{BufRead, BufReader},
 };
 
-use itertools::Itertools;
+use itertools::{Itertools, Product};
 
 struct Grid {
     places: Vec<Vec<bool>>,
@@ -53,6 +53,25 @@ impl Grid {
             .iter()
             .for_each(|&(x, y)| self.places[y][x] = false);
         to_remove.len()
+    }
+    // another version, without the extra vec
+    fn remove_accessibles_2(&mut self) -> usize {
+        let mut removed = 0;
+        for (x, y) in self.coordinates2() {
+            if self.is_removable_roll(x, y) {
+                self.places[y][x] = false;
+                removed += 1;
+            }
+        }
+        removed
+    }
+    // note: funny thing here if you return impl Iterator like in 'coordinates' it does not release
+    // the borrow !
+    fn coordinates2(&self) -> Product<std::ops::Range<usize>, std::ops::Range<usize>> {
+        (0..self.width()).cartesian_product(0..self.height())
+    }
+    fn is_removable_roll(&self, x: usize, y: usize) -> bool {
+        self.places[y][x] && self.neighbours(x, y).filter(|n| *n).count() < 4
     }
 }
 
