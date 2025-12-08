@@ -22,12 +22,10 @@ fn fuse_ranges(mut raw_ranges: Vec<(u64, u64)>) -> Vec<(u64, u64)> {
     raw_ranges
         .into_iter()
         .fold(Vec::new(), |mut v, (start2, end2)| {
-            if let Some((_, end)) = v.last_mut() {
-                if start2 <= *end {
-                    *end = end2.max(*end);
-                } else {
-                    v.push((start2, end2))
-                }
+            if let Some((_, end)) = v.last_mut()
+                && start2 <= *end
+            {
+                *end = end2.max(*end);
             } else {
                 v.push((start2, end2))
             }
