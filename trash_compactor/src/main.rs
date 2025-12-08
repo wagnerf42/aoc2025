@@ -21,10 +21,9 @@ fn parse_maths(f: &str) -> std::io::Result<(Vec<Vec<u64>>, Vec<Op>)> {
     for line in BufReader::new(File::open(f)?).lines().map_while(|l| l.ok()) {
         if line
             .chars()
-            .filter(|c| !c.is_whitespace())
-            .next()
+            .find(|c| !c.is_whitespace())
             .unwrap()
-            .is_digit(10)
+            .is_ascii_digit()
         {
             numbers.push(
                 line.split_whitespace()
@@ -35,10 +34,10 @@ fn parse_maths(f: &str) -> std::io::Result<(Vec<Vec<u64>>, Vec<Op>)> {
             return Ok((numbers, parse_ops(&line)));
         }
     }
-    return Result::Err(std::io::Error::new(
+    Result::Err(std::io::Error::new(
         std::io::ErrorKind::InvalidData,
         "no ops",
-    ));
+    ))
 }
 
 // NOTE: not very pretty this time
@@ -55,7 +54,8 @@ fn parse_and_compute_inverted_maths(f: &str) -> std::io::Result<u64> {
         if let Some(number) = number_lines
             .iter()
             .filter_map(|l| l.as_bytes().get(i).copied())
-            .filter_map(|c| (c >= 48 && c <= 58).then(|| c as u64 - 48)) // meh, this is so bad
+            .filter(|c| (48..=58).contains(c)) // meh, this is so bad
+            .map(|c| c as u64 - 48)
             // but most ascii stuff
             // is in nightly
             .fold(None, |s, d| s.map(|s: u64| s * 10 + d).or(Some(d)))
